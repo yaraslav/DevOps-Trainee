@@ -60,7 +60,8 @@ root@hostname:/etc/skel# mkdir logs
 Также можно отредактировать файл `/etc/default/useradd` и определив там шаблоны для создания юзера по-умолчанию.
 
 После создания юзеров проверяем соответствие login/password:
-```ubuntu@hostname:~$ su john
+```
+ubuntu@hostname:~$ su john
  Password:*****
  john@hostname:/home/ubuntu$
 ```
@@ -190,7 +191,7 @@ Connection to 18.199.223.49 closed.
 После чего закрываем доступ по паролю для юзера raymond, редактируя файл (в моем случае) `/etc/ssh/sshd_config.d/61-users-settings.conf` устанавливая в нем:
 ```
 Match User raymond
-    PasswordAuthentication yes
+    PasswordAuthentication no
 ```
 Проверяем верность настроек и перезапускаем sshd демон:
 ```
