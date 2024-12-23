@@ -100,8 +100,25 @@ NSDA
 ANS!D
 NAD/A. 
 
+```
+echo -e $'NDS/A\nNSDA\nANS!D\nNAD/A' > test.txt && cat test.txt
+```
+    ubuntu@ip-172-31-30-89:~$ echo -e $'NDS/A\nNSDA\nANS!D\nNAD/A' > test.txt && cat test.txt
+    NDS/A
+    NSDA
+    ANS!D
+    NAD/A
+
 4. #### Point 4  
  #### Вывести строки NDS/A и NAD/A из файла используя awk или sed(regexp). 
+
+ ```
+awk '/^N.*\/A$/' test.tx
+``` 
+    ubuntu@ip-172-31-30-89:~$ awk '/^N.*\/A$/' test.txt
+    NDS/A
+    NAD/A
+    
 5. #### Point 5  
  #### Вывести пронумерованные строчки из /etc/passwd, в которых есть оболочка /bin/bash, и перенаправить вывод в файл.
 6. #### Point 6  
