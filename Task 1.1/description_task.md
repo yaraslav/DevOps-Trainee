@@ -207,6 +207,38 @@ raymond@18.199.223.49: Permission denied (publickey).
 yarik@Innowise-work:~$
 ```
 
+UPD: Для удобства работы можем включить  ssh-agent и добавить в него используемые ключи, что позволит на указывать их путь и fingerprint при каждом подключении. Например вот так: 
+```
+yarik@Innowise-work: eval $(ssh-agent  -s) && ssh-add /home/yarik/raymond_key && ssh-add -l
+Agent pid 55444
+Identity added: /home/yarik/raymond_key (yarik@Innowise-work)
+256 SHA256:aL****************************VM yarik@Innowise-work (ED25519)
+```
+```
+yarik@Innowise-work:ssh raymond@3.71.179.183
+The authenticity of host '3.71.179.183 (3.71.179.183)' can't be established.
+ED25519 key fingerprint is SHA256:7H**********************************Y.
+This host key is known by the following other names/addresses:
+    ~/.ssh/known_hosts:14: [hashed name]
+Are you sure you want to continue connecting (yes/no/[fingerprint])? y
+Please type 'yes', 'no' or the fingerprint: yes
+Warning: Permanently added '3.71.179.183' (ED25519) to the list of known hosts.
+Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-1021-aws x86_64)
+
+Last login: Fri Dec 20 15:15:38 2024 from 85.221.149.160
+raymond@ip-172-31-30-89:~$
+raymond@ip-172-31-30-89:~$ exit
+logout
+Connection to 3.71.179.183 closed.
+
+yarik@Innowise-work:ssh raymond@3.71.179.183
+Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-1021-aws x86_64)
+
+Last login: Mon Dec 23 15:34:12 2024 from 85.221.149.87
+raymond@ip-172-31-30-89:~$
+
+```
+
 4) #### Raymond должен иметь доступ к sudo, а John не сможет использовать его.
 
 см. выше п.2
