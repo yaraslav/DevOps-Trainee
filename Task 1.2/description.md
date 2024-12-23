@@ -15,9 +15,11 @@
 #### Вывести размеры разделов диска в отдельный файл. Отсортировать количество столбцов до трех, оставив только Filesystem, Use%, Mounted on.
 Всё это можно сделать средствами предустановленой по-умолчанию утилитой *df*:
 
-     весь вывод
+весь вывод
+
     df -h > disk-size.txt
-     и отсортированные значения (Filesystem, Use%, Mounted on)
+и отсортированные значения (Filesystem, Use%, Mounted on)
+
     df -h --output=source,pcent,target > disk-size-usage.txt
 
 ```    
