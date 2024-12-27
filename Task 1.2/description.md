@@ -8,7 +8,6 @@
 [6) Заменить все строчки с /bin/sh на /bin/bash(проводить на бэкапе).](#Point-6)  
   
 
- Используемые команды должны быть записаны в отдельный файлик.
 
 
 1. #### Point 1  
@@ -76,6 +75,7 @@ tmpfs            1% /run/user/1000
 
 2. #### Point 2  
  #### Узнать размер всех файлов и папок в директории /etc. Отсортировать вывод так,  чтобы показывало только 10 самых больших файлов
+Для этого используем команду du, также сортировку и ограничение вывода первых 10-ти файлов без первой записи общего объема директории
 ```
 sudo du -ah /etc  | sort -rh | tail -n +2 | head -n 10
 ```
@@ -100,6 +100,7 @@ NSDA
 ANS!D
 NAD/A. 
 
+Создаем файл любым удобным способом, например:
 ```
 echo -e $'NDS/A\nNSDA\nANS!D\nNAD/A' > test.txt && cat test.txt
 ```
@@ -108,9 +109,25 @@ echo -e $'NDS/A\nNSDA\nANS!D\nNAD/A' > test.txt && cat test.txt
     NSDA
     ANS!D
     NAD/A
+или так 
+```
+cat > test2.txt  <<EOF
+NDS/A
+NSDA
+ANS!D
+NAD/A.
+
+EOF
+```
+    ubuntu@ip-172-31-30-89:~$ cat test2.txt
+    NDS/A
+    NSDA
+    ANS!D
+    NAD/A
 
 4. #### Point 4  
  #### Вывести строки NDS/A и NAD/A из файла используя awk или sed(regexp). 
+Определим искомые строки как подпадающие под регулярное выражение 'N**/A' и будем искать через 'awk'
 
  ```
 awk '/^N.*\/A$/' test.tx
@@ -121,9 +138,40 @@ awk '/^N.*\/A$/' test.tx
     
 5. #### Point 5  
  #### Вывести пронумерованные строчки из /etc/passwd, в которых есть оболочка /bin/bash, и перенаправить вывод в файл.
+Для этого будем использовать grep и нумерацию строк, так это проще чем регулярки  в awk:
+```
+cat /etc/passwd | grep '/bin/bash' | nl > lines.txt && cat lines.txt
+```
+     ubuntu@ip-172-31-30-89:~$ cat /etc/passwd | grep '/bin/bash' | nl > lines.txt && cat lines.txt
+     1  root:x:0:0:root:/root:/bin/bash
+     2  ubuntu:x:1000:1000:Ubuntu:/home/ubuntu:/bin/bash
+     3  raymond:x:1001:1002::/home/raymond:/bin/bash
+     4  john:x:1002:1003::/home/john:/bin/bash
+
+
 6. #### Point 6  
  ####  Заменить все строчки с /bin/sh на /bin/bash(проводить на бэкапе)
+Создаем бэкап файла, например вот так:
+```
+ubuntu@ip-172-31-30-89:~$ sudo cp /etc/passwd /etc/passwd.bk
+ubuntu@ip-172-31-30-89:~$ ls /etc/passwd.bk
+/etc/passwd.bk
+```
+Проверим наличие строк в /bin/sh в файле предидущим способом:
+```
+ubuntu@ip-172-31-30-89:~$ cat /etc/passwd.bk | grep '/bin/sh' | nl
 
+     1  bill:x:1003:1005::/home/bill:/bin/sh
+```
+Заменим элемент строки при помощи утилиты sed и проверим результат:
+```
+ubuntu@ip-172-31-30-89:~$ sudo sed -i 's|/bin/sh|/bin/bash|g' /etc/passwd.bk
+ubuntu@ip-172-31-30-89:~$ cat /etc/passwd.bk | grep '/bin/sh' | nl
+ubuntu@ip-172-31-30-89:~$ cat /etc/passwd.bk | grep '/bin/bash' | nl
+     1  root:x:0:0:root:/root:/bin/bash
+     2  ubuntu:x:1000:1000:Ubuntu:/home/ubuntu:/bin/bash
+     3  raymond:x:1001:1002::/home/raymond:/bin/bash
+     4  john:x:1002:1003::/home/john:/bin/bash
+     5  bill:x:1003:1005::/home/bill:/bin/bash
+```
 
-
-    Используемые команды должны быть записаны в отдельный файлик.
