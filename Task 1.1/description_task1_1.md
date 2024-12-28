@@ -53,7 +53,7 @@ root@hostname:~#: echo "auth required pam_wheel.so group=sudo" >> /etc/pam.d/sud
   Для удобства написал небольшой скрипт и передадим все имена юзеров как аргументы:
 `./set_users.sh raymond john`
 сам скрипт:
-```
+```bash
 #!/bin/bash
 
 for user in "$@"; do
@@ -113,7 +113,7 @@ su: Permission denied
 #### Raymond должен заходить только по SSH ключу на инстанс. А John должен каждый раз вводить свой пароль при попытке зайти на инстанс и не иметь возможности зайти по ssh ключу.
    Создадим для этого правила авторизации/аутентификации на сервере по SSH создав и редактируя файл (в моем случае) `/etc/ssh/sshd_config.d/61-users-settings.conf` устанавливая в нем например:
 
-```
+```conf
 Port 22
 HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key

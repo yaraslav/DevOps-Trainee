@@ -1,0 +1,13 @@
+[Unit]
+Description=Uptime Logger Service
+After=network.target
+
+[Service]
+ExecStart=/home/ubuntu/uptime-logger.sh
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
