@@ -16,6 +16,13 @@ if [ ! -f "$CLEANUP_FILE" ]; then
 fi
 
 while true; do
+
+    # получение размера файла в байтах и если он больше 50кб, то очистить файл
+  if [ $(stat -c%s "$OVERLOAD_FILE") -ge 51200 ]; then
+      echo "$(date): Cleaning up overload file" >> "$CLEANUP_FILE"
+      > "$OVERLOAD_FILE"
+  fi
+  
   UPTIME_OUTPUT=$(uptime)
   LOAD_AVERAGE=$(echo $UPTIME_OUTPUT | awk -F'load average: ' '{print $2}' | cut -d, -f1)
 
@@ -24,12 +31,6 @@ while true; do
     echo "$UPTIME_OUTPUT" >> "$OVERLOAD_FILE"
   else
     echo "$UPTIME_OUTPUT" >> "$OUTPUT_FILE"
-  fi
-
-  # получение размера файла в байтах и если он больше 50кб, то очистить файл
-  if [ $(stat -c%s "$OVERLOAD_FILE") -ge 51200 ]; then
-      echo "$(date): Cleaning up overload file" >> "$CLEANUP_FILE"
-      > "$OVERLOAD_FILE"
   fi
 
   sleep 15

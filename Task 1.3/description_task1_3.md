@@ -26,9 +26,11 @@ fi
 
 while true; do
   UPTIME_OUTPUT=$(uptime)
+  echo "$UPTIME_OUTPUT" >> "$OUTPUT_FILE"
   sleep 15
 done
 ```
+Делаем его исполняемым `chmod +x uptime_logger.sh`
 
 Создаем Systemd service unit `uptime-logger.service`, чтобы этот сервис мог работать для всей системы, например, для всех пользователей или с правами суперпользователя, создаем его в каталоге `/etc/systemd/system/` :
 
@@ -73,6 +75,8 @@ uptime | awk -F'load average: ' '{print $2}' | cut -d, -f1
 
 Для проверки значения Load Average  превышающего `1.0` за минуту добавляем в скрипт следующее:
 ```bash
+   LOAD_AVERAGE=$(echo $UPTIME_OUTPUT | awk -F'load average: ' '{print $2}' | cut -d, -f1)
+
   # Если Load Average за минуту больше 1
   if awk "BEGIN {exit !($LOAD_AVERAGE > 1)}"; then
     echo "$UPTIME_OUTPUT" >> "$OVERLOAD_FILE"
@@ -83,9 +87,19 @@ uptime | awk -F'load average: ' '{print $2}' | cut -d, -f1
 
 3. #### Point 3  
  ####   Установить утилиту stress. Нагрузить свою систему, применив команду stress --cpu x --timeout 50s, где x - количество процессоров у виртуалки/системы. Проверить работоспособность 2 пунтка. 
-
-```
+Буду использовать утилиту `stress-ng`
+```bash
 sudo apt install stress-ng
+```
+```bash
+ubuntu@ip-172-31-30-89:~$ stress-ng --cpu 4 --timeout 50s
+stress-ng: info:  [3803] setting to a 50 secs run per stressor
+stress-ng: info:  [3803] dispatching hogs: 4 cpu
+stress-ng: info:  [3803] skipped: 0
+stress-ng: info:  [3803] passed: 4: cpu (4)
+stress-ng: info:  [3803] failed: 0
+stress-ng: info:  [3803] metrics untrustworthy: 0
+stress-ng: info:  [3803] successful run completed in 50.01 secs
 ```
 
 4. #### Point 4  
@@ -94,25 +108,80 @@ sudo apt install stress-ng
 ```bash
 #!/bin/bash
 
-OVERLOAD_FILE="/path/to/overload"
-CLEANUP_FILE="/path/to/cleanup"
+OVERLOAD_FILE="$LOGS_PATH/overload.log"
+CLEANUP_FILE="$LOGS_PATH/cleanup.log"
 
 if [ $(stat -c%s "$OVERLOAD_FILE") -ge 51200 ]; then
     echo "$(date): Cleaning up overload file" >> $CLEANUP_FILE
     > $OVERLOAD_FILE
 fi
 ```
-
+Итого весь скрипт будет выглядеть так [uptime-logger.sh](uptime-logger.sh)
     
 5. #### Point 5  
  #### Написать cron job, проверяющий каждые 10 минут статус вышесозданного юнита.
 
-Create a cron job:
+Создаем задачу в cron job создав новую запись в  `crontab -e` : 
+
 ```bash
 */10 * * * * systemctl is-active --quiet uptime-logger.service || systemctl restart uptime_logger.service
 ```
+проверяем создание записи `crontab -l`, работу проверяем в логах, например тут `sudo journalctl -u cron
+`
 
 6. #### Point 6  
  ####  Запустить утилиту ping, вывести запущенный процесс в background, проверить, что процесс находится в фоновом режиме, вернуть процесс в foreground. Остановить процесс, после чего удалить его.
 
+Запустить утилиту ping и вывести запущенный процесс в background
+```bash
+ping google.com > ping_output.txt &
+```
+Проверить, что процесс находится в фоновом режиме
+`jobs`
 
+Вернуть процесс в foreground
+`fg %1`
+
+Остановить процесс
+`Ctrl + C`
+
+Удалить процесс `kill -9 ping`
+
+Вывод выполнения команд:
+```bash
+ubuntu@ip-172-31-30-89:~$ ping google.com > ping_output.txt &
+[1] 8281
+ubuntu@ip-172-31-30-89:~$ ^C
+ubuntu@ip-172-31-30-89:~$ jobs
+[1]+  Running                 ping google.com > ping_output.txt &
+ubuntu@ip-172-31-30-89:~$
+ubuntu@ip-172-31-30-89:~$ fg %1
+ping google.com > ping_output.txt
+ubuntu@ip-172-31-30-89:~$ ^C
+ubuntu@ip-172-31-30-89:~$ ps
+    PID TTY          TIME CMD
+   1614 pts/0    00:00:00 bash
+   8484 pts/0    00:00:00 ps
+ubuntu@ip-172-31-30-89:~$
+ubuntu@ip-172-31-30-89:~$ ping google.com > ping_output.txt &
+[1] 8509
+ubuntu@ip-172-31-30-89:~$ ps
+    PID TTY          TIME CMD
+   1614 pts/0    00:00:00 bash
+   8509 pts/0    00:00:00 ping
+   8522 pts/0    00:00:00 ps
+ubuntu@ip-172-31-30-89:~$ kill -9 ping
+-bash: kill: ping: arguments must be process or job IDs
+ubuntu@ip-172-31-30-89:~$ kill -9 8509
+ubuntu@ip-172-31-30-89:~$ ps
+    PID TTY          TIME CMD
+   1614 pts/0    00:00:00 bash
+   8701 pts/0    00:00:00 ps
+[1]+  Killed                  ping google.com > ping_output.txt
+ubuntu@ip-172-31-30-89:~$
+ubuntu@ip-172-31-30-89:~$ ps
+    PID TTY          TIME CMD
+   1614 pts/0    00:00:00 bash
+   8738 pts/0    00:00:00 ps
+ubuntu@ip-172-31-30-89:~$
+```
