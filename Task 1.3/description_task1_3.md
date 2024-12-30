@@ -121,7 +121,7 @@ fi
 5. #### Point 5  
  #### Написать cron job, проверяющий каждые 10 минут статус вышесозданного юнита.
 
-Создаем задачу в cron job создав новую запись в  `crontab -e` : 
+Создаем задачу в cron job создав новую запись в  `crontab -e` которая будет проверять сервис и перезапускать его если он не активен.
 
 ```bash
 */10 * * * * systemctl is-active --quiet uptime-logger.service || systemctl restart uptime_logger.service
