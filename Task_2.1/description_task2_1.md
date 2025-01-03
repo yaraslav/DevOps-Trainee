@@ -45,7 +45,7 @@ nothing to commit, working tree clean
  #### Зарегистрироваться в двух публичных хостингах git-репозиториев bitbucket и github. Доступ к devops-gitlab.inno.ws ты должен был получить в начале курса. Если возникли какие-то проблемы с доступом, свяжись с ментором.
 
 github - done  
-bitbucket - done  
+bitbucket - done
 gitlab - done  
     
 5. #### Point 5  
