@@ -23,7 +23,7 @@
 ubuntu@ip-172-31-30-89:~$ sudo apt-get update && sudo apt-get install nginx -y
 ```
 <details>
-<summary>лог установки...</summary>
+<summary><b>лог установки...</b></summary>
 
 ```bash
 Hit:1 http://eu-central-1.ec2.archive.ubuntu.com/ubuntu noble InRelease
@@ -125,6 +125,9 @@ sudo systemctl reload nginx
 ```bash
 sudo systemctl status nginx.service
 ```
+<details>
+<summary> Вывод systemctl status nginx.service: </summary>
+
 ```bash
 ubuntu@ip-172-31-30-89:~$ sudo systemctl status nginx.service
 ● nginx.service - A high performance web server and a reverse proxy server
@@ -147,7 +150,9 @@ Jan 02 14:32:25 ip-172-31-30-89 nginx[50050]: 2025/01/02 14:32:25 [notice] 50050
 Jan 02 14:32:25 ip-172-31-30-89 systemd[1]: Reloaded nginx.service - A high performance web server and a reverse proxy server.
 ubuntu@ip-172-31-30-89:~$
 ```
-и проверяем корректность работы web-сервера делая запрос на стоаницу сервиса по ip адресу сервера через web-браузер или `curl`, например:
+</details>
+
+и проверяем корректность работы web-сервера делая запрос на стpаницу сервиса по ip адресу сервера через web-браузер или `curl`, например:
 ```bash
 curl http://localhost
 ```
@@ -155,7 +160,7 @@ curl http://localhost
 ubuntu@ip-172-31-30-89:~$ curl http://localhost
 <html><body style="background-color:blue;">Blue Server</body></html>
 ```
-Срвер доступен и корректно отвечает.
+Сeрвер доступен и корректно отвечает.
 
 3. #### Point 3  
  ####   Создать еще два сервера t2.micro, на одном настроить раздачу страницы yellow.html, на втором настроить балансировщик между yellow и blue. Балансировщик должен направлять запрос на сервер с меньшим количеством подключений. По итогу должно получиться так, что при каждом новом подключении цвет заднего фона должен меняться. 
@@ -174,7 +179,181 @@ terraform import aws_security_group.learn_ec2_sg sg-09509afda3b4efc2a
 aws_instance.blue_server
 aws_security_group.learn_ec2_sg
 ```
-Далее создаем файлы `.tf` для описания всей инфраструктуры: `main.tf`, `variables.tf`, `terraform.tfvars`. Описываем ресурсы серверов и атрибуты остальной инфраструктуры в переменных (VPC и т.д.) на основе `blue_server` полученного из `terraform state list aws_instance.blue_server`, также описываем security_group на основе `terraform state list aws_security_group.learn_ec2_sg`. Все файлы приведены в директориии `Task 1.5/terraform_learn_ec2`.
+Далее создаем файлы `.tf` для описания всей инфраструктуры: `main.tf`, `variables.tf`, `terraform.tfvars`. Описываем ресурсы серверов и атрибуты остальной инфраструктуры в переменных (VPC и т.д.) на основе `blue_server` полученного из `terraform state list aws_instance.blue_server`, также описываем security_group на основе `terraform state list aws_security_group.learn_ec2_sg`.
+<details>
+<summary> <b>main.tf</b></summary>
+
+```hcl
+provider "aws" {
+  region = var.region
+}
+
+resource "aws_security_group" "learn_ec2_sg" {
+    description = "allow only ssh for my ip"
+    name        = "learn_ec2"
+    vpc_id      = var.vpc_id
+    egress      = [
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = null
+            from_port        = 0
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "-1"
+            security_groups  = []
+            self             = false
+            to_port          = 0
+        },
+    ]
+    
+    ingress     = [
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = null
+            from_port        = 443
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "tcp"
+            security_groups  = []
+            self             = false
+            to_port          = 443
+        },
+        {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = null
+            from_port        = 80
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "tcp"
+            security_groups  = []
+            self             = false
+            to_port          = 80
+        },
+        {
+            cidr_blocks      = [
+                 "85.221.149.142/32",
+            ]
+            description      = null
+            from_port        = 22
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "tcp"
+            security_groups  = []
+            self             = false
+            to_port          = 22
+        },
+    ]
+    
+    tags        = {
+        "Name" = "learn_ec2"
+    }
+    tags_all    = {
+        "Name" = "learn_ec2"
+    }
+}
+
+# Blue Server
+resource "aws_instance" "blue_server" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+  subnet_id     = var.subnet_ids[0]
+  security_groups = [aws_security_group.learn_ec2_sg.name]
+
+  tags = {
+    Name = "blue-server"
+  }
+}
+
+# Yellow Server
+resource "aws_instance" "yellow_server" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+  subnet_id     = var.subnet_ids[0]
+  vpc_security_group_ids = [aws_security_group.learn_ec2_sg.id]
+
+
+  tags = {
+    Name = "yellow-server"
+  }
+
+  user_data = <<-EOF
+    #!/bin/bash
+    apt update && apt install -y nginx
+    systemctl start nginx
+    systemctl enable nginx
+  EOF
+}
+
+# Load Balancer Server
+resource "aws_instance" "load_balancer_server" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+  subnet_id     = var.subnet_ids[0]
+  vpc_security_group_ids = [aws_security_group.learn_ec2_sg.id]
+
+  tags = {
+    Name = "load-balancer"
+  }
+
+  user_data = <<-EOF
+    #!/bin/bash
+    apt update && apt install -y nginx
+    cat > /etc/nginx/nginx.conf <<EOL
+    events {}
+
+    http {
+        log_format main '\$proxy_protocol_addr - \$remote_user [\$time_local] "\$request" '
+                        '\$status \$body_bytes_sent "\$http_referer" '
+                        '"\$http_user_agent" "\$http_x_forwarded_for" '
+                        'to_backend=\$upstream_addr;';
+
+        access_log /var/log/nginx/access.log main;
+
+        upstream backend {
+            least_conn;
+            server ${aws_instance.blue_server.private_ip}; # Blue server
+            server ${aws_instance.yellow_server.private_ip}; # Yellow server
+            server ${aws_instance.backup_server.private_ip} backup; # Backup Yellow server
+        }
+
+        server {
+            listen 80;
+            location / {
+                proxy_pass http://backend;
+                proxy_set_header Host \$host;
+                proxy_set_header X-Real-IP \$remote_addr;
+                proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto \$scheme;
+
+                access_log /var/log/nginx/proxy_access.log main;
+            }
+        }
+    }
+    EOL
+    systemctl restart nginx
+  EOF
+}
+
+# Outputs
+output "yellow_server_ip" {
+  value = aws_instance.yellow_server.public_ip
+}
+
+output "load_balancer_ip" {
+  value = aws_instance.load_balancer_server.public_ip
+}
+```
+
+</details><br>
 
 После создания файлов конфигурации валидируем её `terraform validate`:
 
@@ -183,6 +362,8 @@ aws_security_group.learn_ec2_sg
 Success! The configuration is valid.
 ```
 Выполняем `terraform plan`:
+<details>
+<summary> <b>Вывод результата `terraform plan`</b></summary>
 
 ```bash
 (netops) yarik@Innowise-work:terraform_learn_ec2$ terraform plan
@@ -212,7 +393,13 @@ Changes to Outputs:
 Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly
 these actions if you run "terraform apply" now.
 ```
+</details><br>
+
+
 Проверяем вывод и если план соответсвует требуемой инфраструктуре, то применяем `terraform apply` и создаем инстансы:
+<details>
+<summary> <b>Вывод результата `terraform apply`</b></summary>
+
 ```bash
 (netops) yarik@Innowise-work:terraform_learn_ec2$ terraform apply
 aws_security_group.learn_ec2_sg: Refreshing state... [id=sg-09509afda3b4efc2a]
@@ -259,11 +446,13 @@ load_balancer_ip = "18.185.57.12"
 yellow_server_ip = "3.69.30.75"
 
 ```
+</details><br>
+
 После проверяем созданную инфраструктуру:
 `terraform state list` :
 
 ```bash
-yarik@Innowise-work: terraform state list
+(netops) yarik@Innowise-work: terraform state list
 aws_instance.blue_server
 aws_instance.load_balancer_server
 aws_instance.yellow_server
@@ -356,7 +545,7 @@ cat > /etc/nginx/nginx.conf <<EOL
 4. #### Point 4  
  #### Добавить в конфигурацию вывод логов, который будет показывать, куда проксируется запрос клиента.
 
-Для этого нужно отредактировать файл `/etc/nginx/nginx.conf` добавил путь и формат логов:
+Для этого нужно отредактировать файл `/etc/nginx/nginx.conf` добавил путь и собственный формат логов:
 
 ```bash
 sudo nano /etc/nginx/nginx.conf
@@ -365,33 +554,32 @@ sudo nano /etc/nginx/nginx.conf
 events {}
 
     http {
-        # Создаем собственный формат логов
-        log_format main '$proxy_protocol_addr - $remote_user [$time_local] "$request" '
-                        '$status $body_bytes_sent "$http_referer" '
-                        '"$http_user_agent" "$http_x_forwarded_for" '
-                        'to_backend=$upstream_addr;';
+            log_format main '\$proxy_protocol_addr - \$remote_user [\$time_local] "\$request" '
+                            '\$status \$body_bytes_sent "\$http_referer" '
+                            '"\$http_user_agent" "\$http_x_forwarded_for" '
+                            'to_backend=\$upstream_addr;';
 
-        access_log /var/log/nginx/access.log main;
-        # назначение группы серверов как backend
-        upstream backend {
-            least_conn;
-            server {public_ip or private_ip}; # Blue server
-            server {public_ip or private_ip}; # Yellow server
+            access_log /var/log/nginx/access.log main;
+
+            upstream backend {
+                least_conn;
+                server ${aws_instance.blue_server.private_ip}; # Blue server
+                server ${aws_instance.yellow_server.private_ip}; # Yellow server
+            }
+
+            server {
+                listen 80;
+                location / {
+                    proxy_pass http://backend;
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+
+                    access_log /var/log/nginx/proxy_access.log main;
+                }
+            }
         }
-        # настройка правил proxy
-        server {
-            listen 80;
-            location / {
-                proxy_pass http://backend;
-                proxy_set_header Host $host;
-                proxy_set_header X-Real-IP $remote_addr;
-                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                # Логирование с информацией о том, куда направляется запрос
-                access_log /var/log/nginx/proxy_access.log main;
-        }
-    }
-}
 
 ```
 Перезапускаем сервер `sudo systemctl restart nginx` и проверяем работу обновив несколько раз страницу, смотрим лог:
@@ -411,6 +599,98 @@ ubuntu@ip-172-31-25-107:/var/log/nginx$ cat proxy_access.log
 
 5. #### Point 5  
  #### Создать еще один сервер с сайтом и добавить его в конфигурацию как backup сервер.
+
+Для этого добавим в main.tf конфигурацию еще одного сервера и отредактируем там же настройки сервера-балансировщика:
+
+```hcl
+...
+# Backup Yellow Server
+resource "aws_instance" "backup_server" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+  subnet_id     = var.subnet_ids[0]
+  vpc_security_group_ids = [aws_security_group.learn_ec2_sg.id]
+
+
+  tags = {
+    Name = "backup_server"
+  }
+
+  user_data = <<-EOF
+    #!/bin/bash
+    apt update && apt install -y nginx
+    systemctl start nginx
+    systemctl enable nginx
+  EOF
+}
+...
+ЁЁ
+# Load Balancer Server
+resource "aws_instance" "load_balancer_server" {...
+...
+user_data = <<-EOF
+    #!/bin/bash
+    apt update && apt install -y nginx
+    cat > /etc/nginx/nginx.conf <<EOL
+    events {}
+
+    http {
+        .....
+        upstream backend {...
+        ...
+        server ${aws_instance.backup_server.private_ip} backup; # Backup Yellow server
+
+```
+Применяем `terraform validate`, `terraform plan` и `terraform apply` и после провереям созданные ресурсы.
+
+После того как сервер `backup_server` создан, настраиваем его аналогично `yellow_server` из предыдущего пункта.
+
+Затем пересоздаем ``load_balancer_server` с новой конфигурацией:
+```bash
+terraform taint aws_instance.load_balancer_server
+terraform apply
+```
+Проверяем работу  - выключаем (или делаем reboot) оба сервера `yellow_server` и `blue_server` и при обращении на адрес балансировщика в ответ получаем от `backup_server`.
+
+<details>
+<summary> <b>Смотрим лог </b></summary>
+
+```bash
+ubuntu@ip-172-31-24-236:~$ tail -n 30 /var/log/nginx/proxy_access.log
+- - - [03/Jan/2025:14:33:22 +0000] "GET / HTTP/1.1" 200 73 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:33:23 +0000] "GET / HTTP/1.1" 200 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:33:25 +0000] "GET / HTTP/1.1" 200 73 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:33:26 +0000] "GET / HTTP/1.1" 200 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:33:27 +0000] "GET / HTTP/1.1" 200 73 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:33:47 +0000] "GET /cdn-cgi/trace HTTP/1.1" 404 162 "-" "Mozilla/5.0" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:40:54 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:40:55 +0000] "GET / HTTP/1.1" 200 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:40:56 +0000] "GET / HTTP/1.1" 200 73 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:40:58 +0000] "GET / HTTP/1.1" 200 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:40:59 +0000] "GET / HTTP/1.1" 200 73 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:41:34 +0000] "GET / HTTP/1.1" 200 75 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80, 172.31.18.74:80, 172.31.18.206:80;
+- - - [03/Jan/2025:14:41:35 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:36 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:37 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:37 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:38 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:39 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:40 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:40 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:41 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:43 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:43 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:44 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.206:80;
+- - - [03/Jan/2025:14:41:47 +0000] "GET / HTTP/1.1" 499 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:41:56 +0000] "GET / HTTP/1.1" 200 75 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80, 172.31.30.89:80, 172.31.18.206:80;
+- - - [03/Jan/2025:14:42:22 +0000] "GET / HTTP/1.1" 200 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:42:23 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+- - - [03/Jan/2025:14:42:24 +0000] "GET / HTTP/1.1" 200 73 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.18.74:80;
+- - - [03/Jan/2025:14:42:25 +0000] "GET / HTTP/1.1" 200 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-" to_backend=172.31.30.89:80;
+
+```
+</details><br>
 
 
 6. #### Point 6  
