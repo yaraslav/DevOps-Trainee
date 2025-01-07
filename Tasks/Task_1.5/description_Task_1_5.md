@@ -236,9 +236,7 @@ resource "aws_security_group" "learn_ec2_sg" {
             to_port          = 80
         },
         {
-            cidr_blocks      = [
-                 "85.221.149.142/32",
-            ]
+            cidr_blocks      = ["${var.my_ip}/32"]
             description      = null
             from_port        = 22
             ipv6_cidr_blocks = []
