@@ -12,7 +12,7 @@
 Установка Docker на Ubuntu:
 - проверим и удалим устаревшие файлы и раннее установленные конфликтующие пакеты следующим скриптом
 ```bash
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-getve $pkg; done
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 ```
 ```bash
 ubuntu@ip-172-31-30-89:~$ for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-getve $pkg; done
@@ -69,7 +69,11 @@ Jan 04 12:38:05 ip-172-31-30-89 dockerd[3730]: time="2025-01-04T12:38:05.7207556
 Jan 04 12:38:05 ip-172-31-30-89 systemd[1]: Started docker.service - Docker Application Container Engine.
 lines 1-22/22 (END)
 ```
-
+- а также версию установки:
+```bash
+ubuntu@ip-172-31-19-243:~$ docker -v
+Docker version 27.4.1, build b9d17ea
+```
 - и запускаем тестовый контейнер
 ```bash
 sudo docker run hello-world
@@ -126,18 +130,20 @@ loving_merkle
 ```
 **_UPD:_** _для того, чтобы не использовать каждый раз команду `sudo` при выполнение `docker` команд, добавим пользователя в группу `docker`:_
 ```bash
+# если группа не создана создадим её и добавим пользователя
+ubuntu@ip-172-31-30-89:~$ sudo groupadd docker
+ubuntu@ip-172-31-30-89:~$ sudo usermod -aG docker $USER
+
 ubuntu@ip-172-31-30-89:~$ getent group docker
 docker:x:988:
 ubuntu@ip-172-31-30-89:~$ sudo usermod -aG docker $USER
 ubuntu@ip-172-31-30-89:~$ getent group docker
 docker:x:988:ubuntu
-
-# если группа не создана создадим её и добавим пользователя
-ubuntu@ip-172-31-30-89:~$ sudo groupadd docker
-ubuntu@ip-172-31-30-89:~$ sudo usermod -aG docker $USER
+```
+Перезапустим сессию выйдя из ней и снова войдя или выполнив команду `newgrp docker` создающую новую ссесию.
+```bash
 ubuntu@ip-172-31-30-89:~$ newgrp docker
 ```
-
 Далее установим и запустим контейнер на порту `28080` из официального образа nginx командой: `docker run -d -p 127.0.0.1:28080:80 --name nginx-01 nginx:stable`
 
 ```bash
@@ -164,8 +170,6 @@ CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS  
 ubuntu@ip-172-31-30-89:~$
 ```
 ```bash
-ubuntu@ip-172-31-30-89:~$ curl http://localhost
-<html><body style="background-color:blue;">Blue Server</body></html>
 ubuntu@ip-172-31-30-89:~$ curl http://localhost:28080
 <!DOCTYPE html>
 <html>
