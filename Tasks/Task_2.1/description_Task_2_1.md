@@ -51,7 +51,7 @@ gitlab - done  https://devops-gitlab.inno.ws/learn-labs/devops-tasks.git
 5. #### Point 5  
  #### Создать на каждом из хостингов репозиторий devops-task1; bitbucket и github - публичные (public) репозитории, devops-gitlab.inno.ws - внутренний (internal). В репозиторий, созданный в первом задании, добавить 3 удаленных сервера с помощью git remote add. Загрузить репозиторий во все git-хостинги с помощью git push.
 ```bash
-(netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/devops-tasks$ git remote add origin --all https://github.com/yaraslav/devops-tasks.git
+(netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/devops-tasks$ git remote add origin https://github.com/yaraslav/devops-tasks.git
 (netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/devops-tasks$ git remote set-url --add --push origin https://devops-gitlab.inn
 (netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/devops-tasks$ git remote set-url --add --push origin https://devops-gitlab.inn
 o.ws/learn-labs/devops-tasks.git
