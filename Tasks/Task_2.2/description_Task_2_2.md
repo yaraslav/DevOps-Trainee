@@ -307,6 +307,7 @@ remote:
 To https://devops-gitlab.inno.ws/learn-labs/devops-tasks.git
  * [new branch]      feature-new-site -> feature-new-site
 ```
+</details><br>
 ---
 
 5. #### Point 5  
