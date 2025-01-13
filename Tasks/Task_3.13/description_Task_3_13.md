@@ -110,7 +110,7 @@ read escape sequence
 ubuntu@ip-172-31-19-243:~$ 
 ```
 
-*Attached:* скрипт перезапуска нового контейнера [re-run_nginx.sh](Tasks/Task_3.13/re-run_nginx.sh)
+*Attached:* скрипт перезапуска нового контейнера [re-run-nginx.sh](re-run-nginx.sh)
 
 --- 
 

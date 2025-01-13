@@ -682,7 +682,7 @@ location /proxy {
 }
 
 ```
-полный конфиг здесь [nginx.conf](Tasks/Task_1.6/nginx.conf).
+полный конфиг здесь [nginx.conf](nginx.conf).
 
 Далее правим html-страницу:
 
