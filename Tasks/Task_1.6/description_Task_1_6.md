@@ -207,6 +207,17 @@ ubuntu@ip-172-31-28-239:~$ sudo systemctl status snap.certbot.renew.service
 TriggeredBy: ● snap.certbot.renew.timer
 ``` 
 
+**UPDATE:**
+Если сертификат в формате .p12  извлекаем следующим образом:
+```bash
+# Извлечение сертификата
+openssl pkcs12 -nokeys -in your_certificate.p12 -out server-cert.pem
+
+# Извлечение приватного ключа
+openssl pkcs12 -nocerts -nodes -in your_certificate.p12 -out server.key
+
+```
+
 3. #### Point 3 
 #### Установить Nginx на сервер. Написать конфигурацию nginx для обслуживания на 80 и 443 портах. 80 порт должен делать редирект на 443(сайт должен работать только по HTTPS). Веб-сервер должен раздавать /var/www/html/index.nginx-debian.html, который был сгенерирован User Data скриптом.Проверить работоспособность. При вводе домена в поисковую строку должен выдаваться текст: Welcome to my web server. My private IP is *********.
 Сервер был установлен и настроен ранее (см.п.1 и 2)
@@ -225,6 +236,102 @@ ubuntu@ip-172-31-28-239:~$ curl -L http://mylearndevops.sytes.net
 This is My private IP is 172.31.28.239
 ubuntu@ip-172-31-28-239:~$ curl  https://mylearndevops.sytes.net
 This is My private IP is 172.31.28.239
+```
+
+**UPDATE:**
+
+При попытке перейти на сайт по IP-адресу:
+```bash
+
+ubuntu@ip-172-31-28-239:~$ curl -Iv http://3.72.70.48
+*   Trying 3.72.70.48:80...
+* Connected to 3.72.70.48 (3.72.70.48) port 80
+> HEAD / HTTP/1.1
+> Host: 3.72.70.48
+> User-Agent: curl/8.5.0
+> Accept: */*
+>
+< HTTP/1.1 301 Moved Permanently
+HTTP/1.1 301 Moved Permanently
+< Server: nginx/1.24.0 (Ubuntu)
+Server: nginx/1.24.0 (Ubuntu)
+< Date: Fri, 17 Jan 2025 19:02:53 GMT
+Date: Fri, 17 Jan 2025 19:02:53 GMT
+< Content-Type: text/html
+Content-Type: text/html
+< Content-Length: 178
+Content-Length: 178
+< Connection: keep-alive
+Connection: keep-alive
+< Location: https://3.72.70.48/
+Location: https://3.72.70.48/
+
+<
+* Connection #0 to host 3.72.70.48 left intact
+ubuntu@ip-172-31-28-239:~$ curl -Iv https://3.72.70.48
+*   Trying 3.72.70.48:443...
+* Connected to 3.72.70.48 (3.72.70.48) port 443
+* ALPN: curl offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* TLSv1.3 (IN), TLS handshake, Encrypted Extensions (8):
+* TLSv1.3 (IN), TLS handshake, Certificate (11):
+* TLSv1.3 (IN), TLS handshake, CERT verify (15):
+* TLSv1.3 (IN), TLS handshake, Finished (20):
+* TLSv1.3 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.3 (OUT), TLS handshake, Finished (20):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / X25519 / id-ecPublicKey
+* ALPN: server accepted http/1.1
+* Server certificate:
+*  subject: CN=mylearndevops.sytes.net
+*  start date: Jan  7 17:04:11 2025 GMT
+*  expire date: Apr  7 17:04:10 2025 GMT
+*  subjectAltName does not match 3.72.70.48
+* SSL: no alternative certificate subject name matches target host name '3.72.70.48'
+* Closing connection
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* TLSv1.3 (IN), TLS handshake, Newsession Ticket (4):
+* old SSL session ID is stale, removing
+* TLSv1.3 (OUT), TLS alert, close notify (256):
+curl: (60) SSL: no alternative certificate subject name matches target host name '3.72.70.48'
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+ubuntu@ip-172-31-28-239:~$
+
+```
+Видим информацию о владельце, имя и т.д. 
+В web-браузере можно перейти в незащещенное подключение. Чтобы это исправить и запретить доступ по ip-адресу добавляем в конфиг:
+```bash
+server {
+	listen 80 default_server; # Сервер по умолчанию для 80 порта.
+	deny all; # Запретить доступ всем.
+	return 444; # Закрыть соединение без ответа.
+}
+server {
+	listen 443 ssl default_server; # Сервер по умолчанию для 443 порта.
+	http2 on; # Разрешить использовать HTTP/2, для версии выше 1.94
+	ssl_reject_handshake on; # Отклонить рукопожатие.
+}
+```
+проверяем 
+```bash
+ubuntu@ip-172-31-28-239:~$ curl -Iv https://3.72.70.48
+*   Trying 3.72.70.48:443...
+* Connected to 3.72.70.48 (3.72.70.48) port 443
+* ALPN: curl offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+* TLSv1.3 (IN), TLS alert, unrecognized name (624):
+* OpenSSL/3.0.13: error:0A000458:SSL routines::tlsv1 unrecognized name
+* Closing connection
+curl: (35) OpenSSL/3.0.13: error:0A000458:SSL routines::tlsv1 unrecognized name
+
 ```
 
 3. #### Point 4  

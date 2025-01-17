@@ -263,8 +263,7 @@ learn-labs/devops-tasks       ssh://git@devops-gitlab.inno.ws:54042/learn-labs/d
 
 (netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-merge$ git remote -v
 origin      https://devops-gitlab.inno.ws/ilya.sergienko1/git-merge.git (fetch)
-origin      https://devops-gitlab.inno.ws/ilya.sergienko1/git-merge.git (push)
-(netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-merge$ git remote remove old-origin 
+origin      https://devops-gitlab.inno.ws/ilya.sergienko1/git-merge.git (push) 
 (netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-merge$ git remote rename origin old-origin
 (netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-merge$ git remote add origin https://devops-gitlab.inno.ws/learn-labs/devops-task-merge.git
 (netops) yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-merge$ git remote -v
