@@ -38,7 +38,6 @@ yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-squash$
 ```
 
    3. Добавь его как удаленный:  
-
 ```bash
 yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-squash$ git remote add origin https://devops-gitlab.inno.ws/learn-labs/devops-task-force.git
 yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/git-squash$ git remote -v
