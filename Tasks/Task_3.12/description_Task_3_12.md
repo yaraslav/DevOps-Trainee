@@ -44,7 +44,10 @@ ubuntu@ip-172-31-30-89:~$ docker run -d   --name inno-dkr-02   -p 8889:80   -v /
 1c52691cb59545759205022577282dc31a7cf07de41f7575335df810fccd0876
 ubuntu@ip-172-31-30-89:~$
 ```
+UPD: Можно примонтировать файл через флаг, `--mount` - более предпочитаемый и явный:
+`docker run -dit --name inno-dkr-02 -p 8889:80  --mount type=bind,source=/home/ubuntu/nginx.conf,target=/etc/nginx/nginx.conf,readonly nginx:stable`
 
+Данные изменения внесены в скрипт `re-run-nginx.sh`  в последующих задачах.
 ---
 
 2. #### Point 2  
