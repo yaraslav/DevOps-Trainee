@@ -39,7 +39,8 @@ yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE$ cat  ~/.gitconfig
 [includeIf "gitdir:~/innowise/"]
     path = ~/.gitconfig-innowise
 [includeIf "gitdir:/mnt/c/Users/user/DEVOPS_TRAINEE/"]
-    path = ~/.gitconfig-devopstrainee 
+    path = ~/.gitconfig-devopstrainee
+init.defaultbranch=main
 ``` 
 
 ---
