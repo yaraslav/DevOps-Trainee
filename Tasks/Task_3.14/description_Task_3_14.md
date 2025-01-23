@@ -69,7 +69,7 @@ echo -e "\n...and Starting Nginx again with -it mode for 'attach' using!"
 if docker run -dit --name inno-dkr-04 \
  -p 8891:80 \
  --mount type=bind,source=/home/ubuntu/nginx.conf,target=/etc/nginx/nginx.conf,readonly \
- --mount source=inno-dkr-04-volume,target=/var/log/nginx nginx:stable; then
+ --mount type=volume source=inno-dkr-04-volume,target=/var/log/nginx nginx:stable; then
     echo -e "\nNginx started successfully.\n"
 else
     echo -e "\nFailed to start Nginx.\n"
