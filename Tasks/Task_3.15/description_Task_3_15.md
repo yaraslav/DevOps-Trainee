@@ -123,3 +123,31 @@ ubuntu@ip-172-31-19-243:~$ docker ps -a
 CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 ubuntu@ip-172-31-19-243:~$
 ```
+или например вот так:
+```bash
+ubuntu@ip-172-31-19-243:~$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS     NAMES
+2e1b32afd5ba   nginx:stable   "/docker-entrypoint.…"   8 seconds ago    Up 7 seconds    80/tcp    inno-dkr-05-run-f77402c5c4
+f9289828b9e6   nginx:stable   "/docker-entrypoint.…"   10 seconds ago   Up 9 seconds    80/tcp    inno-dkr-05-run-8cbbd73fb4
+9126dab92178   nginx:stable   "/docker-entrypoint.…"   12 seconds ago   Up 11 seconds   80/tcp    inno-dkr-05-run-4ef56c292f
+f271ad1c893c   nginx:stable   "/docker-entrypoint.…"   21 seconds ago   Up 21 seconds   80/tcp    inno-dkr-05-stop
+ubuntu@ip-172-31-19-243:~$
+ubuntu@ip-172-31-19-243:~$ docker ps -aq | xargs docker stop
+2e1b32afd5ba
+f9289828b9e6
+9126dab92178
+f271ad1c893c
+ubuntu@ip-172-31-19-243:~$ docker container prune
+WARNING! This will remove all stopped containers.
+Are you sure you want to continue? [y/N] y
+Deleted Containers:
+2e1b32afd5ba168ed36aea76c3b66e63eaf821e1e5cac18fa2d03f9950bf59fc
+f9289828b9e6e98baa26eee6f23d5e2515cd9fa91c8608103d6399487f733e5a
+9126dab92178c18375ef08a7a9101b04fae7d8a5f90c6e5cab78891a7d4ed33b
+f271ad1c893c04d3544cadee1a76f451c240c977a4d83ba90d00b7e2b9bdfb62
+
+Total reclaimed space: 4.372kB
+ubuntu@ip-172-31-19-243:~$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+ubuntu@ip-172-31-19-243:~$ 
+```
