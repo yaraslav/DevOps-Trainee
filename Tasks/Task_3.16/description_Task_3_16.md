@@ -56,27 +56,27 @@ Status: Downloaded newer image for nginx:stable
 Nginx started successfully.
 ```
 
-   2. Выведи список запущенных контейнеров и сделаем несколько запросов к запущенному nginx через браузер, чтобы были записаны логи. Выведим содержимое лога из файла на хостовой системе, в который записаны логи контейнера:
+   2. Выведем список запущенных контейнеров и сделаем несколько запросов к запущенному nginx через браузер, чтобы были записаны логи. Выведим содержимое лога с меткой времени из файла на хостовой системе, в который записаны логи контейнера:
 
 ```bash
 ubuntu@ip-172-31-19-243:~$ docker ps
 CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS                                     NAMES
 00b0c70c1b71   nginx:stable   "/docker-entrypoint.…"   14 seconds ago   Up 13 seconds   0.0.0.0:8891->80/tcp, [::]:8891->80/tcp   inno-dkr-06-default
 ubuntu@ip-172-31-19-243:~$ 
-ubuntu@ip-172-31-19-243:~$ docker logs -f inno-dkr-06-default
-/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
-/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
-/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
-10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
-10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
-/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
-/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
-/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
-/docker-entrypoint.sh: Configuration complete; ready for start up
-85.221.149.113 - - [27/Jan/2025:16:47:03 +0000] "GET / HTTP/1.1" 200 50 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-"
-85.221.149.113 - - [27/Jan/2025:16:47:04 +0000] "GET / HTTP/1.1" 200 50 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "-"
-```
-На хостовой машине ищем логи тут по ID контейнера(доги будут в формате json):
+ubuntu@ip-172-31-19-243:~$ docker logs -t inno-dkr-06-default
+2025-01-27T16:45:31.254274186Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+2025-01-27T16:45:31.254549136Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+2025-01-27T16:45:31.256738851Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+2025-01-27T16:45:31.268567889Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+2025-01-27T16:45:31.278761244Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+2025-01-27T16:45:31.278939677Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+2025-01-27T16:45:31.279099959Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+2025-01-27T16:45:31.282736015Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+2025-01-27T16:45:31.284052373Z /docker-entrypoint.sh: Configuration complete; ready for start up
+2025-01-27T16:47:03.773575708Z 85.221.149.113 - - [27/Jan/2025:16:47:03 +0000] "GET / HTTP/1.1" 200 50 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/                                 537.36" "-"
+2025-01-27T16:47:04.259947828Z 85.221.149.113 - - [27/Jan/2025:16:47:04 +0000] "GET / HTTP/1.1" 200 50 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/                                 537.36" "-"
+
+На хостовой машине ищем логи тут по ID контейнера(логи будут в формате json):
 ```bash
 ubuntu@ip-172-31-19-243:~$sudo ls -al /var/lib/docker/containers/
 total 12
