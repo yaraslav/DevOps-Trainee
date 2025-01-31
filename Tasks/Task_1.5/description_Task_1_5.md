@@ -482,8 +482,9 @@ ubuntu@ip-172-31-25-107:~$
     http {
         upstream backend {
             least_conn;
-            server {public_ip or private_ip}; # Blue server
-            server {public_ip or private_ip}; # Yellow server
+            server {public_ip or private_ip} max_fails=3 fail_timeout=10s;; # Blue server
+            server {public_ip or private_ip} max_fails=3 fail_timeout=10s;; # Yellow server
+            keepalive 32;
         }
         # настройка правил proxy
         server {
