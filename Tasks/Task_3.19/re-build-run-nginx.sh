@@ -23,7 +23,7 @@ fi
 echo -e "\n...and Run  Nginx image again!"
 if docker run -dit \
     --name $CONTAINER_NAME \
-    -p 127.0.0.1:8900:80 \
+    -p 127.0.0.1:8901:80 \
     $IMAGE_TAG; then
         echo -e "\nNginx started successfully.\n"
 else
