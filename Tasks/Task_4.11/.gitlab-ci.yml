@@ -1,0 +1,21 @@
+# main pipeline
+stages:
+    - test
+    - build
+    - deploy
+
+include:
+  - project: 'learn-labs/repo-a'
+    ref: main
+    file:
+      - '/.test-ci.yml'
+
+build_job:
+    stage: build
+    script:
+    - echo "Hello from build job"
+
+deploy_job:
+    stage: deploy
+    script:
+    - echo "Hello from deploy job"
