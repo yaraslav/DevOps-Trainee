@@ -1,2 +1,8 @@
-Tasks/Task_1.5/terraform_learn_ec2
 .codegpt
+*.env
+*.log
+*.tfstate
+*.tfstate.backup
+*.terraform
+*.tfplan
+*.lock.hcl
