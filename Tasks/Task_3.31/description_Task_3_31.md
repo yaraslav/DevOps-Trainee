@@ -7,7 +7,7 @@
 
 ---
 
-### 1. Point 1
+### Point 1
 **Запусти 4 контейнера для каждой политики рестарта - `no`, `always`, `unless-stopped`, `on-failure` .**
  - Запустим контейнеры со следующими параметрами:
     - должно работать в фоне,
@@ -54,7 +54,7 @@ yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/DevOps-Trainee$
 ```
 ---
 
-### 2. Point 2
+### Point 2
 **Вызовем docker kill для каждого контейнера и выведем список с дублированием в файл kill_15.txt.**
 
   - Для каждого контейнера вызови команду `docker kill -s 15` с сигналом `SIGTERM (код 15)` для корректнного завершения, для этого сделаем небольшой скрипт:
@@ -79,7 +79,7 @@ yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/DevOps-Trainee$ ls -l kill_
 ```
 ---
 
-### 3. Point 3
+### Point 3
 **Запустим неактивные контейнеры и выведем список контейнеров.**
 
   - Запустим все неактивные контейнеры через скрипт `docker ps -aq -f "status=exited" | xargs docker restart` и выведем список:
@@ -99,7 +99,7 @@ yarik@Innowise-work:/mnt/c/Users/user/DEVOPS_TRAINEE/DevOps-Trainee$
 
 ---
 
-### 4. Point 4
+### Point 4
 **Вызовeм `docker kill` без доп. флагов (с сигналом `SIGKILL` (код 9)) для каждого контейнера и выведем список с дублированием в файл kill.txt.**
 
   - Для каждого контейнера вызовем команду `docker kill` через скрипт `docker ps -q | xargs docker kill`:
