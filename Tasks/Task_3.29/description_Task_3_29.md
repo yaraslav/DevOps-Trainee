@@ -30,4 +30,4 @@ public/avatars/**/*.gif
 
 ```
 
-Созданый по этим требованиям файл можно получить здесь [.gitignore](.gitignore)
+Созданый по этим требованиям файл можно получить здесь [.dockerignore](.dockerignore)
