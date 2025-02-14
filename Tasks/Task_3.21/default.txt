@@ -1,0 +1,18 @@
+IMAGE          CREATED         CREATED BY                                      SIZE      COMMENT
+dddb44dc829f   7 minutes ago   CMD ["sleep infinity"]                          0B        buildkit.dockerfile.v0
+<missing>      7 minutes ago   USER user                                       0B        buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c chown user:user testfile # bu…   10.5MB    buildkit.dockerfile.v0
+<missing>      7 minutes ago   COPY testfile . # buildkit                      10.5MB    buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c ls -lah /var/lib/apt/lists/ #…   0B        buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c rm -rf /var/lib/apt/lists/* #…   0B        buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c ls -lah /var/lib/apt/lists/ #…   0B        buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c apt-get update -y && apt-get …   115MB     buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c ls -lah /var/lib/apt/lists/ #…   0B        buildkit.dockerfile.v0
+<missing>      7 minutes ago   RUN /bin/sh -c groupadd --gid 2000 user && u…   658kB     buildkit.dockerfile.v0
+<missing>      7 minutes ago   ENV testenv1=env1                               0B        buildkit.dockerfile.v0
+<missing>      4 months ago    /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B        
+<missing>      4 months ago    /bin/sh -c #(nop) ADD file:7486147a645d8835a…   72.8MB    
+<missing>      4 months ago    /bin/sh -c #(nop)  LABEL org.opencontainers.…   0B        
+<missing>      4 months ago    /bin/sh -c #(nop)  LABEL org.opencontainers.…   0B        
+<missing>      4 months ago    /bin/sh -c #(nop)  ARG LAUNCHPAD_BUILD_ARCH     0B        
+<missing>      4 months ago    /bin/sh -c #(nop)  ARG RELEASE                  0B        
