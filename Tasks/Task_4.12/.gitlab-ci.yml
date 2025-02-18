@@ -1,0 +1,60 @@
+stages:
+    - build-test
+    - test
+    - deploy
+
+image: docker:latest
+services:
+    - docker:dind
+
+
+variables:
+  CI_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD
+  CI_REGISTRY: $CI_REGISTRY
+  CI_PROJECT_PATH: $CI_PROJECT_PATH
+  SSH_KEY: $SSH_PRIVATE_KEY
+  PATH_HOST: $HOST
+  TEST_IMG: test_app
+  PROD_IMG: $CI_REGISTRY/$CI_PROJECT_PATH/app
+  APP_NAME: flask
+
+build-docker-test:
+  stage: build-test
+
+  script:
+    - docker buildx build -t $TEST_IMG -f test.Dockerfile .
+
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+test-docker-test:
+  stage: test
+  script:
+    - docker run --rm $TEST_IMG
+
+deploy-docker-prod:
+  stage: deploy
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KEY" > ~/.ssh/aws_key.pem
+    - chmod 400 ~/.ssh/aws_key.pem
+    - ssh-add ~/.ssh/aws_key.pem
+
+    - echo "$CI_JOB_TOKEN" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+
+  script:
+    - docker buildx build -t $PROD_IMG -f prod.Dockerfile .
+
+    - VERSION=$(date "+%Y%m%d%H%M")
+    - docker tag $PROD_IMG $PROD_IMG:$VERSION
+    - docker push $PROD_IMG:$VERSION
+
+    - docker save $PROD_IMG:$VERSION | ssh -o StrictHostKeyChecking=no $PATH_HOST docker load
+    - ssh -o StrictHostKeyChecking=no $PATH_HOST docker rm -f $APP_NAME || true
+    - ssh -o StrictHostKeyChecking=no $PATH_HOST docker run --name $APP_NAME -d -p 5000:5000 $PROD_IMG:$VERSION 
+
+  rules:
+      - if: $CI_COMMIT_BRANCH
