@@ -1,9 +1,9 @@
 ### Чекпоинты
 
-[1) Загрузить репозиторий git-squash, выполнить squash и принудительную загрузку изменений.](#Point-1)  
-[2) Создать pull requests для веток feature и develop в репозитории git-rebase.](#Point-2)  
-[3) Создать pull request из ветки feature в develop в репозитории git-merge.](#Point-3)  
-[4) Выполнить fork репозитория git-checkout, добавить файл и создать pull request.](#Point-4)  
+[1) Загрузить репозиторий git-squash, выполнить squash и принудительную загрузку изменений.](#point-1)  
+[2) Создать pull requests для веток feature и develop в репозитории git-rebase.](#point-2)  
+[3) Создать pull request из ветки feature в develop в репозитории git-merge.](#point-3)  
+[4) Выполнить fork репозитория git-checkout, добавить файл и создать pull request.](#point-4)  
 
 ---
 
